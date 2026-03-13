@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  nickname  String?  @db.VarChar(50)
+  avatarUrl String?  @map("avatar_url") @db.Text
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  githubAccount      GithubAccount?
+  solvedAccount      SolvedAccount?
+  userStats          UserStats?
+  activityLogs       ActivityLog[]
+  githubContributions GithubContribution[]
+  solvedProblems     SolvedProblem[]
+  algorithmStats     AlgorithmStat[]
+  recommendedProblems RecommendedProblem[]
+
+  @@map("users")
+}
+
+model GithubAccount {
+  userId        String   @id @map("user_id")
+  githubId      String?  @unique @map("github_id") @db.VarChar(50)
+  githubLogin   String?  @unique @map("github_login") @db.VarChar(50)
+  repoCount     Int?     @map("repo_count")
+  followers     Int?
+  totalCommits  Int?     @map("total_commits")
+  currentStreak Int?     @map("current_streak")
+  languages     Json?
+  updatedAt     DateTime? @map("updated_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("github_accounts")
+}
+
+model SolvedAccount {
+  userId       String   @id @map("user_id")
+  solvedHandle String?  @unique @map("solved_handle") @db.VarChar(50)
+  tier         Int?
+  rating       Int?
+  solvedCount  Int?     @map("solved_count")
+  streak       Int?
+  updatedAt    DateTime? @map("updated_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("solved_accounts")
+}
+
+model UserStats {
+  userId         String   @id @map("user_id")
+  level          Int      @default(1)
+  exp            Int      @default(0)
+  characterStage String?  @map("character_stage") @db.VarChar(30)
+  updatedAt      DateTime @default(now()) @map("updated_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String?  @db.VarChar(30)
+  value     Int?
+  exp       Int?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("activity_logs")
+}
+
+model GithubContribution {
+  id                String @id @default(uuid())
+  userId            String @map("user_id")
+  date              DateTime @db.Date
+  contributionCount Int?   @map("contribution_count")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@map("github_contributions")
+}
+
+model SolvedProblem {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  problemId     Int      @map("problem_id")
+  tier          Int?
+  algorithmTags String[] @map("algorithm_tags")
+  solvedAt      DateTime? @map("solved_at") @db.Timestamptz()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, problemId])
+  @@index([userId, solvedAt])
+  @@map("solved_problems")
+}
+
+model AlgorithmStat {
+  id          String  @id @default(uuid())
+  userId      String  @map("user_id")
+  algorithm   String  @db.VarChar(50)
+  solvedCount Int?    @map("solved_count")
+  avgTier     Float?  @map("avg_tier")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, algorithm])
+  @@index([userId])
+  @@map("algorithm_stats")
+}
+
+model RecommendedProblem {
+  id        String  @id @default(uuid())
+  userId    String  @map("user_id")
+  problemId Int     @map("problem_id")
+  algorithm String? @db.VarChar(50)
+  tier      Int?
+  reason    String? @db.Text
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("recommended_problems")
+}
