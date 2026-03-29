@@ -1,7 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 
 const NAV_ITEMS = [
-  { label: "Dashboard", href: "/" },
   { label: "GitHub", href: "/github" },
   { label: "Baekjoon", href: "/baekjoon" },
   { label: "Profile", href: "/profile" },
@@ -11,7 +10,7 @@ export const Header = () => {
   const { pathname } = useLocation();
 
   return (
-    <header className="w-full bg-white border-b border-gray-200 px-3 flex items-center gap-10">
+    <header className="w-full bg-white border-b border-gray-200 px-3 flex items-center gap-5">
       {/* Logo */}
       <Link to="/" className="flex flex-col items-start shrink-0">
         <img src="/assets/logo.png" alt="꼬물이" className="h-16 w-auto" />

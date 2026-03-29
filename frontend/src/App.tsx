@@ -1,6 +1,6 @@
 import { Route, Routes, useLocation } from "react-router-dom";
 import "./App.css";
-import { MainPage } from "./main/MainPage";
+import { ProfilePage } from "./profile/ProfilePage";
 import { LoginPage } from "./auth/pages/LoginPage";
 import { CallbackPage } from "./auth/pages/CallbackPage";
 import { Header } from "./shared/components/Header";
@@ -15,6 +15,7 @@ function App() {
   if (!showLayout) {
     return (
       <Routes>
+        <Route path="/"></Route>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<CallbackPage />} />
       </Routes>
@@ -38,7 +39,7 @@ function App() {
         {/* 메인 콘텐츠 */}
         <main className="flex-1 ml-[204px] overflow-y-auto p-6">
           <Routes>
-            <Route path="/" element={<MainPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </main>
       </div>
