@@ -1,4 +1,4 @@
-export const MainPage = () => {
+export const LoginPage = () => {
   return (
     <div>
       MainPage
