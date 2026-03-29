@@ -2,7 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import { clearToken, getAccessToken, updateAccessToken } from "./tokenStorage";
 
 const axiosClient = axios.create({
-  baseURL: "/api",
+  baseURL: "http://localhost:3000/api",
   withCredentials: true,
 });
 
