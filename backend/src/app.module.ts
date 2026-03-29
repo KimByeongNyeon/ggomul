@@ -4,6 +4,8 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { GithubModule } from './modules/github/github.module';
 import { BaekjoonModule } from './modules/baekjoon/baekjoon.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
 
 @Module({
   imports: [
@@ -11,6 +13,8 @@ import { BaekjoonModule } from './modules/baekjoon/baekjoon.module';
       isGlobal: true,
     }),
     PrismaModule,
+    AuthModule,
+    UserModule,
     DashboardModule,
     GithubModule,
     BaekjoonModule,
