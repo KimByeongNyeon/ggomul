@@ -3,6 +3,7 @@ import { GithubUserDto } from '../dto/github-user-dto';
 import { GithubRepoDto } from '../dto/github-repo-dto';
 import { GithubLanguageDto } from '../dto/github-language.dto';
 import { GithubContributionDto } from '../dto/github-commit-dto';
+import { GithubSearchCommitsDto } from '../dto/github-event-dto';
 import type { AxiosInstance } from 'axios';
 
 @Injectable()
@@ -35,6 +36,13 @@ export class GithubApi {
   ): Promise<GithubLanguageDto> {
     const res = await this.githubClient.get<GithubLanguageDto>(
       `/repos/${owner}/${repo}/languages`,
+    );
+    return res.data;
+  }
+
+  async getRecentCommits(username: string): Promise<GithubSearchCommitsDto> {
+    const res = await this.githubClient.get<GithubSearchCommitsDto>(
+      `/search/commits?q=author:${username}&sort=committer-date&order=desc&per_page=100`,
     );
     return res.data;
   }

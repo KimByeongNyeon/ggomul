@@ -10,6 +10,15 @@ import {
   GithubStats,
 } from 'src/modules/dashboard/dto/dashboard.dto';
 import { GithubLanguageStat } from '../dto/github-language-stat-dto';
+import {
+  GithubRepoItem,
+  GithubCommitItem,
+  GithubReposResponse,
+  GithubCommitsResponse,
+  GithubContributionsResponse,
+  GithubLanguageStatItem,
+  GithubContributionDay,
+} from '../dto/github-my-dto';
 
 /**
  * 서비스 내부에 외부 API 통신 로직을 넣지 않고 외부에 어댑터 계층을 두어
@@ -99,5 +108,104 @@ export class GithubService {
     }
 
     return { totalCommits, currentStreak, heatmap: days };
+  }
+
+  async getMyRepos(username: string): Promise<GithubReposResponse> {
+    const repos = await this.githubApi.getRepos(username);
+
+    const languagePromises = repos.map((repo) =>
+      this.githubApi.getRepoLanguages(username, repo.name),
+    );
+    const languageList = await Promise.all(languagePromises);
+
+    const languageBytes: Record<string, number> = {};
+    for (const languages of languageList) {
+      for (const [lang, bytes] of Object.entries(languages)) {
+        languageBytes[lang] = (languageBytes[lang] || 0) + bytes;
+      }
+    }
+
+    const totalBytes = Object.values(languageBytes).reduce(
+      (sum, bytes) => sum + bytes,
+      0,
+    );
+
+    const languageStats: GithubLanguageStatItem[] = Object.entries(
+      languageBytes,
+    )
+      .map(([language, bytes]) => ({
+        language,
+        bytes,
+        percent: Number(((bytes / totalBytes) * 100).toFixed(1)),
+      }))
+      .sort((a, b) => b.percent - a.percent);
+
+    const repoItems: GithubRepoItem[] = repos.map((repo) => ({
+      name: repo.name,
+      html_url: repo.html_url,
+      description: repo.description,
+      language: repo.language,
+      stargazers_count: repo.stargazers_count,
+      forks_count: repo.forks_count,
+      updated_at: repo.updated_at,
+    }));
+
+    return { repos: repoItems, languageStats };
+  }
+
+  async getMyCommits(username: string): Promise<GithubCommitsResponse> {
+    const data = await this.githubApi.getRecentCommits(username);
+
+    const commits: GithubCommitItem[] = data.items.map((item) => ({
+      repo: item.repository.full_name,
+      message: item.commit.message,
+      date: item.commit.committer.date,
+    }));
+
+    return { commits };
+  }
+
+  async getMyContributions(
+    username: string,
+  ): Promise<GithubContributionsResponse> {
+    const data = await this.githubApi.getContributions(username);
+    const calendar =
+      data.data.user.contributionsCollection.contributionCalendar;
+
+    const days: GithubContributionDay[] = calendar.weeks.flatMap(
+      (week) => week.contributionDays,
+    );
+
+    const totalCommits = days.reduce(
+      (sum, day) => sum + day.contributionCount,
+      0,
+    );
+
+    const activeDays = days.filter((day) => day.contributionCount > 0).length;
+
+    let currentStreak = 0;
+    for (let i = days.length - 1; i >= 0; i--) {
+      if (days[i].contributionCount > 0) currentStreak++;
+      else break;
+    }
+
+    let longestStreak = 0;
+    let streak = 0;
+    for (const day of days) {
+      if (day.contributionCount > 0) {
+        streak++;
+        if (streak > longestStreak) longestStreak = streak;
+      } else {
+        streak = 0;
+      }
+    }
+
+    return {
+      totalCommits,
+      activeDays,
+      longestStreak,
+      currentStreak,
+      heatmap: days,
+    };
   }
 }

@@ -2,6 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { GithubService } from 'src/modules/github/service/github.service';
 import { BaekjoonService } from 'src/modules/baekjoon/service/baekjoon.service';
 import { DashboardResponse } from '../dto/dashboard.dto';
+import {
+  GithubReposResponse,
+  GithubCommitsResponse,
+  GithubContributionsResponse,
+} from 'src/modules/github/dto/github-my-dto';
 
 @Injectable()
 export class DashboardFacade {
@@ -24,15 +29,22 @@ export class DashboardFacade {
       ]);
 
     return {
-      github: {
-        stats,
-        languages,
-        contributions,
-      },
-      baekjoon: {
-        userStats,
-        tierStats,
-      },
+      github: { stats, languages, contributions },
+      baekjoon: { userStats, tierStats },
     };
+  }
+
+  async getMyRepos(username: string): Promise<GithubReposResponse> {
+    return this.githubService.getMyRepos(username);
+  }
+
+  async getMyCommits(username: string): Promise<GithubCommitsResponse> {
+    return this.githubService.getMyCommits(username);
+  }
+
+  async getMyContributions(
+    username: string,
+  ): Promise<GithubContributionsResponse> {
+    return this.githubService.getMyContributions(username);
   }
 }

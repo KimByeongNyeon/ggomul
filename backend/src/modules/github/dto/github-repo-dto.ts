@@ -6,4 +6,5 @@ export interface GithubRepoDto {
   language: string | null;
   stargazers_count: number;
   forks_count: number;
+  updated_at: string;
 }
