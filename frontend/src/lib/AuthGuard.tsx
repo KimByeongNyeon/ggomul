@@ -1,28 +1,24 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAutoLogin } from "../auth/hooks/useAutoLogin";
-import { getAccessToken } from "./tokenStorage";
 
 interface AuthGuardProps {
   children: React.ReactNode;
 }
 
+const PUBLIC_PATHS = ["/", "/login", "/auth/callback"];
+
 export const AuthGuard = ({ children }: AuthGuardProps) => {
-  const location = useLocation();
-  const { pathname } = location;
+  const { pathname } = useLocation();
+  const { isChecking, isLoggedIn } = useAutoLogin();
 
-  const { isChecking: isAuthCheking, isLoggedIn } = useAutoLogin();
+  const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + "/"));
 
-  const token = getAccessToken();
+  if (isPublic) return <>{children}</>;
 
-  if (isAuthCheking) return <div>인증 확인중...</div>;
+  if (isChecking) return <div>인증 확인중...</div>;
 
-  if (pathname.startsWith("/login")) {
-    return <>{children}</>;
-  }
+  if (!isLoggedIn) return <Navigate to="/" replace />;
 
-  if (pathname.startsWith("/login") && isLoggedIn && token) {
-    return <Navigate to="/" replace />;
-  }
-  return <></>;
+  return <>{children}</>;
 };

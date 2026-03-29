@@ -11,7 +11,7 @@ export const CallbackPage = () => {
     if (accessToken) {
       handleLoginSuccess(accessToken);
     }
-    navigate("/");
+    navigate("/Github");
   }, [navigate]);
 
   return <></>;
